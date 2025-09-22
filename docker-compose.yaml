@@ -1,6 +1,8 @@
 version: '3.8'
+
 services:
 
+  # Postgres database
   postgres:
     image: postgres:15
     container_name: postgres-db
@@ -9,15 +11,18 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: mydb
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  # Frontend (React)
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
     ports:
-      - '3000:3000'
+      - "3000:3000"
     depends_on:
       - auth-service
       - user-service
@@ -25,45 +30,61 @@ services:
       - order-service
       - payment-service
 
+  # Auth Service (Node.js)
   auth-service:
-    build: ./auth-service
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
     container_name: auth-service
     ports:
-      - '4001:4001'
+      - "4001:4001"
     depends_on:
       - postgres
 
+  # User Service (Python + FastAPI)
   user-service:
-    build: ./user-service
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-service
     ports:
-      - '4002:4002'
+      - "4002:4002"
     depends_on:
       - postgres
 
+  # Product Service (Java + Spring Boot)
   product-service:
-    build: ./product-service
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
     container_name: product-service
     ports:
-      - '4003:4003'
+      - "4003:4003"
     depends_on:
       - postgres
 
+  # Order Service (Go + Gin)
   order-service:
-    build: ./order-service
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
     container_name: order-service
     ports:
-      - '4004:4004'
+      - "4004:4004"
     depends_on:
       - postgres
 
+  # Payment Service (.NET 7)
   payment-service:
-    build: ./payment-service
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
     container_name: payment-service
     ports:
-      - '4005:4005'
+      - "4005:4005"
     depends_on:
       - postgres
 
 volumes:
   pgdata:
+

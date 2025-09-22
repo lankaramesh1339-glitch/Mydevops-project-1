@@ -1,13 +1,12 @@
 package main
 
-import (
-    "github.com/gin-gonic/gin"
-)
+import "github.com/gin-gonic/gin"
 
-func main(){
+func main() {
     r := gin.Default()
-    r.GET("/", func(c *gin.Context){
-        c.String(200, "Hello from Order Service (Go Gin)")
+    r.GET("/ping", func(c *gin.Context) {
+        c.JSON(200, gin.H{"message": "pong"})
     })
-    r.Run(":8081")
+    r.Run(":4004")
 }
+

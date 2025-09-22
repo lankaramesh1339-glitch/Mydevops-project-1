@@ -1,7 +1,19 @@
 FROM node:18-alpine
+
 WORKDIR /app
-COPY package.json ./
-RUN npm install --production --silent
-COPY . .
-EXPOSE 3000
-CMD ["node","index.js"]
+
+# Copy package files first for caching
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source files
+COPY . ./
+
+# Expose port
+EXPOSE 4001
+
+# Start service
+CMD ["npm", "start"]
+

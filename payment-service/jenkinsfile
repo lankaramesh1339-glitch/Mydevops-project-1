@@ -1,42 +1,49 @@
 pipeline {
     agent any
+
+    environment {
+        IMAGE_NAME = "payment-service"
+        REGISTRY = "your-dockerhub-username/payment-service"
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/lankaramesh1339-glitch/Mydevops-project-1.git'
+                git branch: 'main', url: 'https://github.com/your-repo/payment-service.git'
             }
         }
+
         stage('Restore & Build') {
             steps {
-                sh 'dotnet restore && dotnet build'
+                sh 'dotnet restore PaymentService.csproj'
+                sh 'dotnet build -c Release PaymentService.csproj'
             }
         }
-        stage('Unit Tests') {
+
+        stage('Unit Test') {
             steps {
-                sh 'dotnet test'
+                sh 'dotnet test --no-build'
             }
         }
-        stage('SonarQube Scan') {
+
+        stage('Publish') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner -Dsonar.projectKey=payment-service'
-                }
+                sh 'dotnet publish -c Release -o publish'
             }
         }
+
         stage('Docker Build') {
             steps {
-                sh 'docker build -t payment-service:latest ./payment-service'
+                sh "docker build -t $IMAGE_NAME:latest ."
             }
         }
-        stage('Trivy Scan') {
+
+        stage('Docker Push') {
             steps {
-                sh 'trivy image payment-service:latest'
-            }
-        }
-        stage('Push Image') {
-            steps {
-                sh 'docker push payment-service:latest'
+                sh "docker tag $IMAGE_NAME:latest $REGISTRY:latest"
+                sh "docker push $REGISTRY:latest"
             }
         }
     }
 }
+
