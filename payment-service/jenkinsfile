@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "payment-service"
+        REGISTRY = "your-dockerhub-username/payment-service"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-repo/payment-service.git'
+            }
+        }
+
+        stage('Restore & Build') {
+            steps {
+                sh 'dotnet restore PaymentService.csproj'
+                sh 'dotnet build -c Release PaymentService.csproj'
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                sh 'dotnet test --no-build'
+            }
+        }
+
+        stage('Publish') {
+            steps {
+                sh 'dotnet publish -c Release -o publish'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh "docker build -t $IMAGE_NAME:latest ."
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                sh "docker tag $IMAGE_NAME:latest $REGISTRY:latest"
+                sh "docker push $REGISTRY:latest"
+            }
+        }
+    }
+}
+

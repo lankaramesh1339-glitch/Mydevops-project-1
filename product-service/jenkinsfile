@@ -1,0 +1,37 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: 'https://github.com/lankaramesh1339-glitch/Mydevops-project-1.git'
+            }
+        }
+        stage('Build & Unit Tests') {
+            steps {
+                sh 'mvn clean test'
+            }
+        }
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'sonar-scanner -Dsonar.projectKey=product-service'
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t product-service:latest ./product-service'
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image product-service:latest'
+            }
+        }
+        stage('Push Image') {
+            steps {
+                sh 'docker push product-service:latest'
+            }
+        }
+    }
+}
