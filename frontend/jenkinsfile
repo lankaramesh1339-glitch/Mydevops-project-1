@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: ''
+            }
+        }
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'npm test'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'npm run build'
+            }
+        }
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'sonar-scanner -Dsonar.projectKey=frontend'
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t frontend:latest ./frontend'
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image frontend:latest'
+            }
+        }
+        stage('Push Image') {
+            steps {
+                sh 'docker push frontend:latest'
+            }
+        }
+    }
+}

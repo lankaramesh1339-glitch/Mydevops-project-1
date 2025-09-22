@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'master', url: ''
+            }
+        }
+        stage('Restore & Build') {
+            steps {
+                sh 'dotnet restore && dotnet build'
+            }
+        }
+        stage('Unit Tests') {
+            steps {
+                sh 'dotnet test'
+            }
+        }
+        stage('SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'sonar-scanner -Dsonar.projectKey=payment-service'
+                }
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t payment-service:latest ./payment-service'
+            }
+        }
+        stage('Trivy Scan') {
+            steps {
+                sh 'trivy image payment-service:latest'
+            }
+        }
+        stage('Push Image') {
+            steps {
+                sh 'docker push payment-service:latest'
+            }
+        }
+    }
+}
