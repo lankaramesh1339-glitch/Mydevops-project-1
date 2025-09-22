@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: ''
+                git branch: 'master', url: 'https://github.com/lankaramesh1339-glitch/Mydevops-project-1.git'
             }
         }
         stage('Build & Unit Tests') {
